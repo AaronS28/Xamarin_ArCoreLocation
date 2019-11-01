@@ -14,9 +14,7 @@ using Google.AR.Core;
 using Google.AR.Sceneform;
 using Java.Util.Functions;
 using UK.CO.Appoly.Arcorelocation.Utils;
-using Android.Content;
 using Google.AR.Core.Exceptions;
-using Java.Lang;
 
 namespace Xamarin_ArCoreLocation
 {
@@ -95,7 +93,28 @@ namespace Xamarin_ArCoreLocation
                 }
                 catch (UnavailableException e)
                 {
-                    //DemoUtils.handleSessionException(this, e);
+                    string message;
+                    if (e is UnavailableArcoreNotInstalledException) 
+                    {
+                        message = "Please install ARCore";
+                    } 
+                    else if (e is UnavailableApkTooOldException) 
+                    {
+                        message = "Please update ARCore";
+                    } 
+                    else if (e is UnavailableSdkTooOldException) 
+                    {
+                        message = "Please update this app";
+                    } 
+                    else if (e is UnavailableDeviceNotCompatibleException) 
+                    {
+                        message = "This device does not support AR";
+                    } 
+                    else
+                    {
+                        message = "Failed to create AR session";
+                    }
+                    Toast.MakeText(this, message, ToastLength.Long).Show();
                 }
             }
 
@@ -103,10 +122,15 @@ namespace Xamarin_ArCoreLocation
             {
                 arSceneView.Resume();
             }
-            catch (CameraNotAvailableException ex)
+            catch (System.Exception ex)
             {
                 Finish();
                 return;
+            }
+
+            if (arSceneView.Session != null)
+            {
+                ShowLoadingMessage();
             }
         }
 
@@ -157,6 +181,29 @@ namespace Xamarin_ArCoreLocation
             baseNode.Renderable = exampleLayoutRenderable;
             // Add  listeners etc here
             return baseNode;
+        }
+
+        private void ShowLoadingMessage()
+        {
+            if (loadingMessageSnackbar != null && loadingMessageSnackbar.IsShownOrQueued)
+            {
+                return;
+            }
+
+            loadingMessageSnackbar = Snackbar.Make(this.FindViewById(Android.Resource.Id.Content), Resource.String.plane_finding, Snackbar.LengthIndefinite);
+            loadingMessageSnackbar.View.SetBackgroundColor(Android.Graphics.Color.Blue);
+            loadingMessageSnackbar.Show();
+        }
+
+        private void HideLoadingMessage()
+        {
+            if (loadingMessageSnackbar == null)
+            {
+                return;
+            }
+
+            loadingMessageSnackbar.Dismiss();
+            loadingMessageSnackbar = null;
         }
 
         public Java.Lang.Object Apply(Java.Lang.Object t, Java.Lang.Object u)
@@ -216,14 +263,25 @@ namespace Xamarin_ArCoreLocation
                 locationScene.ProcessFrame(frame);
             }
 
+            if (loadingMessageSnackbar != null)
+            {
+                foreach (Plane plane in frame.GetUpdatedTrackables(Java.Lang.Class.FromType(typeof(Plane))))
+                {
+                    if (plane.TrackingState == TrackingState.Tracking)
+                    {
+                        HideLoadingMessage();
+                    }
+                }
+            }
+
             return;
         }
 
         public void Render(LocationNode node)
         {
             View eView = exampleLayoutRenderable.View;
-            TextView distanceTextView = (TextView)eView.FindViewById(Resource.Id.textView2);
-            distanceTextView.SetText(node.Distance.ToString(), TextView.BufferType.Normal);
+            //TextView distanceTextView = (TextView)eView.FindViewById(Resource.Id.textView2);
+            //distanceTextView.SetText(node.Distance.ToString(), TextView.BufferType.Normal);
         }
     }
 }

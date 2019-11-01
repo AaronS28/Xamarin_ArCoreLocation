@@ -4626,10 +4626,13 @@ namespace Xamarin_ArCoreLocation
 			public const int path_password_strike_through = 2131689549;
 			
 			// aapt resource value: 0x7F0F004E
-			public const int search_menu_title = 2131689550;
+			public const int plane_finding = 2131689550;
 			
 			// aapt resource value: 0x7F0F004F
-			public const int status_bar_notification_info_overflow = 2131689551;
+			public const int search_menu_title = 2131689551;
+			
+			// aapt resource value: 0x7F0F0050
+			public const int status_bar_notification_info_overflow = 2131689552;
 			
 			// aapt resource value: 0x7F0F0000
 			public const int @__arcore_cancel = 2131689472;
